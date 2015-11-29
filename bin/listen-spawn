@@ -1,0 +1,66 @@
+#!/usr/bin/env node
+
+// Load in ListenSpawn and dependencies
+var ListenSpawn = require('../lib/listen-spawn.js'),
+    optimist = require('optimist');
+
+// Set up usage and parse arguments
+var argv = optimist
+            .usage('Usage: $0 [options] -- command [args...]\nStarts server and invokes command with arguments whenever touched.')
+            .describe('port', 'Port to start server on')
+            ['default']('port', 7060)
+            .argv;
+
+// If there were too few arguments, output help
+var _argv = argv._;
+if (_argv.length === 0) {
+  optimist.showHelp();
+  process.exit(1);
+}
+
+// Pluck out our command, arguments, and options
+var cmd = _argv[0],
+    args = _argv.slice(1),
+    options = argv;
+
+// Forward all output to stdout and stderr
+options.stdio = [0, 1, 2];
+
+// Generate a new ListenSpawn with our parameters
+var server = new ListenSpawn(cmd, args, options);
+
+// Log out any events from the server
+var util = require('util'),
+    colors = require('fn-colors');
+
+// Log the address we are listening at
+util.log('[listen-spawn] Listening at http://localhost:' + options.port + '/');
+
+// When the child kill starts, log it
+server.on('killing', function () {
+  util.log.green('[listen-spawn] Killing existing child');
+});
+
+// When the child start starts, log it
+server.on('starting', function () {
+  util.log.green('[listen-spawn] Starting new process -- ' + cmd + ' ' + args.join(' '));
+});
+
+// When a request is received, log it
+server.on('request', function () {
+  util.log.green('[listen-spawn] Request received');
+});
+
+// When a request is ignored, log it
+server.on('restart-ignored', function () {
+  util.log.green('[listen-spawn] Request ignored - Restart already in progress');
+});
+
+// If a child exits, log it
+server.on('exited', function (code) {
+  if (code === 0) {
+    util.log.green('[listen-spawn] App exited cleanly');
+  } else {
+    util.log.green('[listen-spawn] App left with exit code ' + code);
+  }
+});

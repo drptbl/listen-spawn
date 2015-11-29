@@ -1,0 +1,103 @@
+{
+  "_args": [
+    [
+      "listen-spawn",
+      "/Users/jm/repos/yg-e2e-smoke-tests"
+    ]
+  ],
+  "_from": "listen-spawn@*",
+  "_id": "listen-spawn@0.7.3",
+  "_inCache": true,
+  "_location": "/listen-spawn",
+  "_npmUser": {
+    "email": "todd@twolfson.com",
+    "name": "twolfson"
+  },
+  "_npmVersion": "1.2.14",
+  "_phantomChildren": {
+    "wordwrap": "0.0.3"
+  },
+  "_requested": {
+    "name": "listen-spawn",
+    "raw": "listen-spawn",
+    "rawSpec": "",
+    "scope": null,
+    "spec": "*",
+    "type": "range"
+  },
+  "_requiredBy": [
+    "#USER"
+  ],
+  "_resolved": "https://registry.npmjs.org/listen-spawn/-/listen-spawn-0.7.3.tgz",
+  "_shasum": "bb9e6ee1b2d0bcd908f2a8cb8f587b60cfedec13",
+  "_shrinkwrap": null,
+  "_spec": "listen-spawn",
+  "_where": "/Users/jm/repos/yg-e2e-smoke-tests",
+  "author": {
+    "email": "todd@twolfson.com",
+    "name": "Todd Wolfson",
+    "url": "http://twolfson.com/"
+  },
+  "bin": {
+    "listen-spawn": "bin/listen-spawn"
+  },
+  "bugs": {
+    "url": "https://github.com/twolfson/listen-spawn/issues"
+  },
+  "dependencies": {
+    "fn-colors": "~0.1.0",
+    "optimist": "~0.5.2",
+    "single-child": "~0.3.3"
+  },
+  "description": "Start a HTTP server which runs commands when pinged.",
+  "devDependencies": {
+    "grunt": "~0.3.17",
+    "mocha": "~1.11.0",
+    "request": "~2.21.0"
+  },
+  "directories": {},
+  "dist": {
+    "shasum": "bb9e6ee1b2d0bcd908f2a8cb8f587b60cfedec13",
+    "tarball": "http://registry.npmjs.org/listen-spawn/-/listen-spawn-0.7.3.tgz"
+  },
+  "engines": {
+    "node": ">= 0.6.0"
+  },
+  "homepage": "https://github.com/twolfson/listen-spawn",
+  "installable": true,
+  "keywords": [
+    "command",
+    "exec",
+    "http",
+    "listen",
+    "ping",
+    "run",
+    "server",
+    "spawn"
+  ],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/twolfson/listen-spawn/blob/master/LICENSE-MIT"
+    }
+  ],
+  "main": "lib/listen-spawn",
+  "maintainers": [
+    {
+      "name": "twolfson",
+      "email": "todd@twolfson.com"
+    }
+  ],
+  "name": "listen-spawn",
+  "optionalDependencies": {},
+  "readme": "# listen-spawn [![Build status](https://travis-ci.org/twolfson/listen-spawn.png?branch=master)](https://travis-ci.org/twolfson/listen-spawn)\n\nStart a HTTP server which runs commands when pinged.\n\nThis is **intended for development use only**. It is supported and tested on Linux and Windows.\n\nIt was designed to allow for execution of semi-frequent commands (e.g. a blocking command, starting a browser). This is complimented by [text editor specific plugins][plugins] which make requests to the server.\n\nBelow is a screenshot of using [Sublime Text 2][subl] with [sublime-request][request] and a keyboard shortcut to launch [browser-launcher][launcher] tests.\n\n![Sublime Text 2 using sublime-request and browser-launcher][screenshot]\n\n[plugins]: #sublime-text-plugin\n[subl]: http://sublimetext.com/\n[screenshot]: screenshot.png\n[launcher]: https://github.com/substack/browser-launcher\n\n## Getting Started\nInstall the module globally with: `npm install -g listen-spawn`\n\n```sh\n# Navigate to your working directory\ncd my_project\n\n# Set up listen-spawn to run `npm test`\nlisten-spawn -- npm test # Listening at http://localhost:7060/ [...]\n\n# In a separate process, curl the server to run `npm test` again\ncurl http://localhost:7060/ # > my_project@0.1.0 test [...]\n```\n\n### Integrating with Sublime Text 2\n#### sublime-request\n[sublime-request][request] is a [Sublime Text 2][subl] plugin which adds the command `request`. The following shortcut makes a `curl` request to `http://localhost:7060/`.\n\n```js\n// Add the following to your \"Key Bindings - User\" inside the []\n{ \"keys\": [\"alt+x\"], \"command\": \"request\", \"args\": {\"open_args\": [\"http://localhost:7060/\"]} }\n```\n\n[request]: https://github.com/twolfson/sublime-request\n\n#### Out of the box solution\nThe following shortcut invokes a `curl` request to `http://localhost:7060/` when `alt+x` is pressed. The downside is this opens a panel every time it is executed.\n\n```js\n// Add the following to your \"Key Bindings - User\" inside the []\n{ \"keys\": [\"alt+x\"], \"command\": \"exec\", \"args\": {\"cmd\": [\"curl\", \"http://localhost:7060/\"]} }\n```\n\n### File watching based solution\nIf you are looking for a solution which performs an action when a file changes rather than when a server is pinged, then you should checkout [nodemon][].\n\n[nodemon]: https://github.com/remy/nodemon\n\n## Documentation\n`listen-spawn` installs a CLI endpoint via `npm`. It is good practice to always use `--` to separate `options` from `command` as this can lead to unintended parsing.\n\n```sh\n$ listen-spawn\nUsage: listen-spawn [options] -- command [args...]\nStarts server and invokes command with arguments whenever touched.\n\nOptions:\n  --port  Port to start server on  [default: 7060]\n```\n\n### Windows caveats\nIf you are trying to run command prompt specific commands (e.g. `echo`), you will run into trouble. Unfortunately, [`child_process.spawn`][cp-spawn] does not like to run these. To remedy this, you will need to run it via `cmd /c`.\n\n```bat\nE:\\listen-spawn> REM This will fail\nE:\\listen-spawn> listen-spawn -- echo 1\n24 Jul 01:30:41 - [listen-spawn] Listening at http://localhost:7060/\n...\nError: spawn ENOENT\nE:\\listen-spawn> REM To make it run, use `cmd /c`\nE:\\listen-spawn> listen-spawn -- cmd /c echo 1\n24 Jul 01:31:37 - [listen-spawn] Listening at http://localhost:7060/\n24 Jul 01:31:37 - [listen-spawn] Starting new process -- cmd /c echo 1\n1\n24 Jul 01:31:37 - [listen-spawn] App exited cleanly\n```\n\n[cp-spawn]: http://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options\n\n## Examples\n### Run a specific test\n```sh\n$ listen-spawn -- mocha test/assert.js\n20 Jun 04:17:58 - [listen-spawn] Listening at http://localhost:7060/\n20 Jun 04:17:58 - [listen-spawn] Starting new process -- mocha test/assert.js\n\n  ․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․\n\n  42 tests complete (16 ms)\n\n20 Jun 04:17:58 - [listen-spawn] App exited cleanly\n```\n\n### Script testing a browser launcher\n```sh\n$ listen-spawn -- node example/launch.js\n20 Jun 04:20:25 - [listen-spawn] Listening at http://localhost:7060/\n20 Jun 04:20:25 - [listen-spawn] Starting new process -- node example/launch.js\nStarting browser\n[...]\n```\n\n## Donating\nSupport this project and [others by twolfson][gittip] via [gittip][].\n\n[![Support via Gittip][gittip-badge]][gittip]\n\n[gittip-badge]: https://rawgithub.com/twolfson/gittip-badge/master/dist/gittip.png\n[gittip]: https://www.gittip.com/twolfson/\n\n## Contributing\nIn lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint via [grunt](https://github.com/gruntjs/grunt) and test via `npm test`.\n\n## License\nCopyright (c) 2013 Todd Wolfson\n\nLicensed under the MIT license.\n",
+  "readmeFilename": "README.md",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/twolfson/listen-spawn.git"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "version": "0.7.3"
+}
